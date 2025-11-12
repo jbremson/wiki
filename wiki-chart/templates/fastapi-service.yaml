@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  labels:
+    app: fastapi
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.fastapi.port }}
+    targetPort: {{ .Values.fastapi.port }}
+    protocol: TCP
+    name: http
+  selector:
+    app: fastapi

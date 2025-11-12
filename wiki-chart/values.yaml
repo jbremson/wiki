@@ -1,0 +1,90 @@
+# FastAPI service configuration
+fastapi:
+  image_name: "fastapi-wiki-service:latest"
+  replicas: 1
+  port: 8000
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  image: "postgres:15"
+  database: "wikidb"
+  username: "admin"
+  password: "admin"
+  port: 5432
+  persistence:
+    enabled: true
+    size: "2Gi"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+
+# Prometheus configuration
+prometheus:
+  enabled: true
+  image: "prom/prometheus:v2.47.0"
+  port: 9090
+  retention: "15d"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+
+# Grafana configuration
+grafana:
+  enabled: true
+  image: "grafana/grafana:10.1.0"
+  port: 3000
+  adminUser: "admin"
+  adminPassword: "admin"
+  dashboardPath: "/d/creation-dashboard-678/creation"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: wiki-service.local
+      paths:
+        - path: /users
+          pathType: Prefix
+          serviceName: fastapi-service
+          servicePort: 8000
+        - path: /posts
+          pathType: Prefix
+          serviceName: fastapi-service
+          servicePort: 8000
+        - path: /grafana/d/creation-dashboard-678/creation
+          pathType: Prefix
+          serviceName: grafana-service
+          servicePort: 3000
+
+# Resource limits for the entire cluster
+cluster:
+  resources:
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+      storage: "5Gi"

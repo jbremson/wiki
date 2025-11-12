@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+  labels:
+    app: fastapi
+spec:
+  replicas: {{ .Values.fastapi.replicas }}
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+      - name: fastapi
+        image: {{ .Values.fastapi.image_name }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.fastapi.port }}
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://{{ .Values.postgresql.username }}:{{ .Values.postgresql.password }}@postgres-service:{{ .Values.postgresql.port }}/{{ .Values.postgresql.database }}"
+        resources:
+          limits:
+            cpu: {{ .Values.fastapi.resources.limits.cpu }}
+            memory: {{ .Values.fastapi.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.fastapi.resources.requests.cpu }}
+            memory: {{ .Values.fastapi.resources.requests.memory }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.fastapi.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.fastapi.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
