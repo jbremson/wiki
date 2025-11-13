@@ -22,7 +22,7 @@ spec:
         - containerPort: {{ .Values.fastapi.port }}
         env:
         - name: DATABASE_URL
-          value: "postgresql://{{ .Values.postgresql.username }}:{{ .Values.postgresql.password }}@postgres-service:{{ .Values.postgresql.port }}/{{ .Values.postgresql.database }}"
+          value: "postgresql+asyncpg://{{ .Values.postgresql.username }}:{{ .Values.postgresql.password }}@postgres-service:{{ .Values.postgresql.port }}/{{ .Values.postgresql.database }}"
         resources:
           limits:
             cpu: {{ .Values.fastapi.resources.limits.cpu }}

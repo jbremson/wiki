@@ -43,8 +43,6 @@ spec:
           mountPath: /etc/grafana/provisioning/dashboards
         - name: grafana-dashboard-creation
           mountPath: /var/lib/grafana/dashboards
-        - name: grafana-storage
-          mountPath: /var/lib/grafana
       volumes:
       - name: grafana-datasources
         configMap:
@@ -55,6 +53,4 @@ spec:
       - name: grafana-dashboard-creation
         configMap:
           name: grafana-dashboard-creation
-      - name: grafana-storage
-        emptyDir: {}
 {{- end }}

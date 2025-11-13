@@ -4,10 +4,12 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir asyncpg
 
-# Copy application code
-COPY . .
+# Copy application package and main module
+COPY app/ ./app/
+COPY main.py .
 
 # Expose the application port
 EXPOSE 8000

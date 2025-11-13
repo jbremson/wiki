@@ -5,7 +5,7 @@ metadata:
   labels:
     app: fastapi
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
   - port: {{ .Values.fastapi.port }}
     targetPort: {{ .Values.fastapi.port }}

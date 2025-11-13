@@ -45,16 +45,15 @@ metadata:
 data:
   creation-dashboard.json: |
     {
-      "dashboard": {
-        "id": null,
-        "uid": "creation-dashboard-678",
-        "title": "Creation Dashboard",
-        "tags": ["wiki", "creation"],
-        "timezone": "browser",
-        "schemaVersion": 16,
-        "version": 0,
-        "refresh": "5s",
-        "panels": [
+      "id": null,
+      "uid": "creation-dashboard-678",
+      "title": "Creation Dashboard",
+      "tags": ["wiki", "creation"],
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "5s",
+      "panels": [
           {
             "id": 1,
             "title": "Users and Posts Creation Rate",
@@ -155,6 +154,5 @@ data:
             }
           }
         ]
-      }
     }
 {{- end }}
