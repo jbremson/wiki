@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .response.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .list-section {
+            margin-top: 30px;
+        }
+
+        .list-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .list-item h3 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .list-item p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wiki Service</h1>
+
+        <div class="grid">
+            <!-- Create User -->
+            <div class="card">
+                <h2>Create User</h2>
+                <form id="createUserForm">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <button type="submit">Create User</button>
+                </form>
+                <div class="response" id="userResponse"></div>
+            </div>
+
+            <!-- Create Post -->
+            <div class="card">
+                <h2>Create Post</h2>
+                <form id="createPostForm">
+                    <div class="form-group">
+                        <label for="author_id">Author (User ID):</label>
+                        <select id="author_id" name="author_id" required>
+                            <option value="">Select a user...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Content:</label>
+                        <textarea id="content" name="content" required></textarea>
+                    </div>
+                    <button type="submit">Create Post</button>
+                </form>
+                <div class="response" id="postResponse"></div>
+            </div>
+        </div>
+
+        <!-- List Users -->
+        <div class="card">
+            <h2>Users</h2>
+            <button onclick="loadUsers()">Refresh Users</button>
+            <div class="list-section" id="usersList"></div>
+        </div>
+
+        <!-- List Posts -->
+        <div class="card">
+            <h2>Posts</h2>
+            <button onclick="loadPosts()">Refresh Posts</button>
+            <div class="list-section" id="postsList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Create User
+        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                username: formData.get('username'),
+                email: formData.get('email')
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/users/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                const responseDiv = document.getElementById('userResponse');
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `User created successfully! ID: ${result.id}`;
+                    e.target.reset();
+                    loadUsers();
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `Error: ${result.detail}`;
+                }
+                responseDiv.style.display = 'block';
+            } catch (error) {
+                const responseDiv = document.getElementById('userResponse');
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `Error: ${error.message}`;
+                responseDiv.style.display = 'block';
+            }
+        });
+
+        // Create Post
+        document.getElementById('createPostForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                title: formData.get('title'),
+                content: formData.get('content'),
+                author_id: parseInt(formData.get('author_id'))
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/posts/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                const responseDiv = document.getElementById('postResponse');
+
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `Post created successfully! ID: ${result.id}`;
+                    e.target.reset();
+                    loadPosts();
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `Error: ${result.detail}`;
+                }
+                responseDiv.style.display = 'block';
+            } catch (error) {
+                const responseDiv = document.getElementById('postResponse');
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `Error: ${error.message}`;
+                responseDiv.style.display = 'block';
+            }
+        });
+
+        // Load Users
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/users/?limit=100`);
+                const users = await response.json();
+                const usersList = document.getElementById('usersList');
+                const authorSelect = document.getElementById('author_id');
+
+                // Update users list
+                usersList.innerHTML = users.length > 0
+                    ? users.map(user => `
+                        <div class="list-item">
+                            <h3>${user.username}</h3>
+                            <p><strong>ID:</strong> ${user.id}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                        </div>
+                    `).join('')
+                    : '<p>No users found.</p>';
+
+                // Update author dropdown
+                authorSelect.innerHTML = '<option value="">Select a user...</option>' +
+                    users.map(user => `<option value="${user.id}">${user.username} (ID: ${user.id})</option>`).join('');
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Load Posts
+        async function loadPosts() {
+            try {
+                const response = await fetch(`${API_BASE}/posts/?limit=100`);
+                const posts = await response.json();
+                const postsList = document.getElementById('postsList');
+
+                postsList.innerHTML = posts.length > 0
+                    ? posts.map(post => `
+                        <div class="list-item">
+                            <h3>${post.title}</h3>
+                            <p><strong>ID:</strong> ${post.id} | <strong>Author ID:</strong> ${post.author_id}</p>
+                            <p>${post.content}</p>
+                        </div>
+                    `).join('')
+                    : '<p>No posts found.</p>';
+            } catch (error) {
+                console.error('Error loading posts:', error);
+            }
+        }
+
+        // Load data on page load
+        window.addEventListener('load', () => {
+            loadUsers();
+            loadPosts();
+        });
+    </script>
+</body>
+</html>

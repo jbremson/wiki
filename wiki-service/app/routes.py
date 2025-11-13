@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from fastapi.responses import Response
+import os
 
 from app.models import User, Post
 from app.schemas import UserCreate, UserResponse, PostCreate, PostResponse
@@ -13,6 +15,10 @@ router = APIRouter()
 
 @router.get("/")
 async def read_root():
+    """Serve the HTML interface"""
+    static_file = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    if os.path.exists(static_file):
+        return FileResponse(static_file)
     return {"message": "Wiki Service API - Async PostgreSQL", "version": "2.0"}
 
 
